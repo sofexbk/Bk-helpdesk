@@ -17,6 +17,8 @@ export async function generateStaticParams(){
 
 async function getTicket(id){
     try {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
         const res = await axios.get("http://localhost:4000/tickets/" + id, {
           next: {
             revalidate: 60, // no cache with 0

@@ -1,6 +1,8 @@
 import axios from "axios"
 import Link from "next/link";
 async function getTickets(){
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
    const res= await axios.get('http://localhost:4000/tickets',{
     next:{
         revalidate:0 //no cache
