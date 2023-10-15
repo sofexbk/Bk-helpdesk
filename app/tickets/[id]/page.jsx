@@ -1,17 +1,40 @@
 import axios from "axios"
-async function getTicket(id){
-   const res= await axios.get('http://localhost:4000/tickets/' + id,{
-    next:{
-        revalidate:0 //no cache
-    }
-   })
-   return res.data;
+import { notFound } from "next/navigation"
+
+
+export const dynamicParams=true
+
+export async function generateStaticParams(){
+    // [{id:'1'},{id:'2'},......]
+    const res=await axios.get('http://localhost:4000/tickets/')
+    const tickets =res.data
+    return tickets.map((ticket)=>{
+        id:ticket.id
+    })
+
 }
 
- 
+
+async function getTicket(id){
+    try {
+        const res = await axios.get("http://localhost:4000/tickets/" + id, {
+          next: {
+            revalidate: 60, // no cache with 0
+          },
+        });
+    
+        return res.data;
+      } catch (error) {
+        // Handle the 404 error by returning a "Not Found" page.
+        return notFound();
+      }
+ }
+
 export default async function TicketDetails({params}) {
     const ticket= await getTicket(params.id)
-
+    if (!ticket) {
+        return notFound();
+      }
     return (
     <main>
         <nav>
