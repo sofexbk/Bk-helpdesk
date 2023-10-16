@@ -32,9 +32,9 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 404) {
-      return Promise.reject(notFound()); // Return the "Not Found" response
+      return Promise.reject(notFound()); 
     }
-    return Promise.reject(error); // Return other errors as-is
+    return Promise.reject(error); 
   }
 );
 
@@ -47,12 +47,10 @@ async function getTicket(id) {
     });
 
     if (!res.data) {
-      // Handle other cases where data is missing, if needed
     }
 
     return res.data;
   } catch (error) {
-    // Handle other errors if necessary
     console.error("Error fetching data:", error);
     throw error;
   }
