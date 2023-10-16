@@ -1,68 +1,81 @@
-import axios from "axios"
 import { notFound } from "next/navigation"
+import axios from "axios"
 
-
-export const dynamicParams=true
-
+export const dynamicParams = true // default val = true
 
 export async function generateMetadata({ params }) {
-  const id = params.id
+  const id = params.id;
 
-  const res = await axios.get(`http://localhost:4000/tickets/${id}`)
-  const ticket = await res.data
+  try {
+    const res = await axios.get(`http://localhost:4000/tickets/${id}`);
+    const ticket = res.data;
+
+    return {
+      title: `Bk Helpdesk | ${ticket.title}`,
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+
+export async function generateStaticParams() {
+  const res = await axios.get('http://localhost:4000/tickets')
+
+  const tickets = await res.data
  
-  return {
-    title: `bk Helpdesk | ${ticket.title}`
+  return tickets.map((ticket) => ({
+    id: ticket.id
+  }))
+}
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 404) {
+      return Promise.reject(notFound()); // Return the "Not Found" response
+    }
+    return Promise.reject(error); // Return other errors as-is
+  }
+);
+
+async function getTicket(id) {
+  try {
+    const res = await axios.get(`http://localhost:4000/tickets/${id}`, {
+      next: {
+        revalidate: 60
+      }
+    });
+
+    if (!res.data) {
+      // Handle other cases where data is missing, if needed
+    }
+
+    return res.data;
+  } catch (error) {
+    // Handle other errors if necessary
+    console.error("Error fetching data:", error);
+    throw error;
   }
 }
 
 
-export async function generateStaticParams(){
-    // [{id:'1'},{id:'2'},......]
-    const res=await axios.get('http://localhost:4000/tickets/')
-    const tickets =res.data
-    return tickets.map((ticket)=>{
-        id:ticket.id
-    })
+export default async function TicketDetails({ params }) {
+  // const id = params.id
+  const ticket = await getTicket(params.id)
 
-}
-
-
-async function getTicket(id){
-    try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        const res = await axios.get("http://localhost:4000/tickets/" + id, {
-          next: {
-            revalidate: 60, // no cache with 0
-          },
-        });
-    
-        return res.data;
-      } catch (error) {
-        // Handle the 404 error by returning a "Not Found" page.
-        return notFound();
-      }
- }
-
-export default async function TicketDetails({params}) {
-    const ticket= await getTicket(params.id)
-    if (!ticket) {
-        return notFound();
-      }
-    return (
+  return (
     <main>
-        <nav>
-            <h2>Tickets</h2>
-        </nav>
-        <div className="card">
-            <h3>{ticket.title}</h3>
-            <small>Created By:{ticket.user_email}</small>
-            <p>{ticket.body}</p>
-            <div className={`pill ${ticket.priority}`}>
-                {ticket.priority} priority
-            </div>
+      <nav>
+        <h2>Ticket Details</h2>
+      </nav>
+      <div className="card">
+        <h3>{ticket.title}</h3>
+        <small>Created by {ticket.user_email}</small>
+        <p>{ticket.body}</p>
+        <div className={`pill ${ticket.priority}`}>
+          {ticket.priority} priority
         </div>
+      </div>
     </main>
   )
 }

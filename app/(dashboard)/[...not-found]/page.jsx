@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-export default function Notfound() {
+export default function NotFoundCatchAll() {
   return (
     notFound()
   )
