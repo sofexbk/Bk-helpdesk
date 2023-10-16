@@ -4,6 +4,19 @@ import { notFound } from "next/navigation"
 
 export const dynamicParams=true
 
+
+export async function generateMetadata({ params }) {
+  const id = params.id
+
+  const res = await axios.get(`http://localhost:4000/tickets/${id}`)
+  const ticket = await res.data
+ 
+  return {
+    title: `bk Helpdesk | ${ticket.title}`
+  }
+}
+
+
 export async function generateStaticParams(){
     // [{id:'1'},{id:'2'},......]
     const res=await axios.get('http://localhost:4000/tickets/')
