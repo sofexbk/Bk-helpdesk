@@ -12,3 +12,13 @@ export async function GET(){
     status:200 
   })
 }
+
+export async function POST(request){
+  const ticket=await request.json()
+  const res = await axios.post('http://localhost:4000/tickets', ticket);
+
+  const newTicket=await res.data
+ return NextResponse.json(newTicket,{
+    status:201 
+ })
+}
