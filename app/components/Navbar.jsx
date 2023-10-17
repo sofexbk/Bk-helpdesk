@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Pic from './Pic.png'
 import Image from 'next/image'
+import LogoutButton from './LogoutButton'
 
 export default function Navbar({user}) {
   return (
@@ -14,10 +15,11 @@ export default function Navbar({user}) {
         />
     <h2>bk helpdesk</h2>
     <Link href="/">Dashboard</Link>
-    <Link href="/tickets">Tickets</Link>
+    <Link href="/tickets" className='mr-auto'>Tickets</Link>
     {user && (
       <span>Hello,{user.email}</span>
     )}
+    <LogoutButton/>
   </nav>  
   )
 }
