@@ -1,14 +1,19 @@
-import axios from "axios"
-import Link from "next/link";
-async function getTickets(){
-    await new Promise(resolve => setTimeout(resolve, 1000))
+import Link from "next/link"
+import { cookies } from 'next/headers'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 
-   const res= await axios.get('http://localhost:4000/tickets',{
-    next:{
-        revalidate:0 //no cache
-    }
-   })
-   return res.data;
+
+async function getTickets() {
+  const supabase = createServerComponentClient({ cookies })
+
+  const { data, error } = await supabase.from('tickets')
+    .select()
+
+  if (error) {
+    console.log(error.message)
+  }
+
+  return data
 }
 
 
