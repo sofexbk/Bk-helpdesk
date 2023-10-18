@@ -1,24 +1,24 @@
-// /api/tickets 
-import axios from "axios";
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
+import { cookies } from 'next/headers'
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 
-export const dynamis='force-dynamic'
+export async function POST(request) {
+  const ticket = await request.json()
 
-export async function GET(){
-  const res= await axios.get('http://localhost:4000/tickets')
-  const tickets=await res.data
+  // get supabase instance
+  const supabase = createRouteHandlerClient({ cookies })
 
-  return NextResponse.json(tickets,{
-    status:200 
-  })
-}
+  // get current user session
+  const { data: { session } } = await supabase.auth.getSession()
 
-export async function POST(request){
-  const ticket=await request.json()
-  const res = await axios.post('http://localhost:4000/tickets', ticket);
+  // insert the data
+  const { data, error } = await supabase.from('tickets')
+    .insert({
+      ...ticket,
+      user_email: session.user.email,
+    })
+    .select()
+    .single()
 
-  const newTicket=await res.data
- return NextResponse.json(newTicket,{
-    status:201 
- })
+  return NextResponse.json({ data, error })
 }

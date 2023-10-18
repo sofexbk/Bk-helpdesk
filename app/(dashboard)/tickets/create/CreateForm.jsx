@@ -1,11 +1,10 @@
 "use client"
-import axios from "axios"
+
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export default function CreateForm() {
-    const router = useRouter()
-
+  const router = useRouter()
 
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -16,24 +15,44 @@ export default function CreateForm() {
     e.preventDefault()
     setIsLoading(true)
 
-    const newTicket = { title, body, priority, user_email: 'mario@netninja.dev' };
-
+    const newTicket = { title, body, priority, user_email: 'mario@netninja.dev' }
+    
+    const res = await fetch('http://localhost:3000/api/tickets', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTicket)
+    });
+    
     try {
-      const res = await axios.post('http://localhost:4000/tickets', newTicket);
-  
-      if (res.status === 201) {
-        router.refresh()
-        router.push('/tickets');
+      const text = await res.text(); // Get the response text
+    
+      if (res.ok) {
+        // Check if the response status is OK
+        if (text) {
+          const json = JSON.parse(text); // Try to parse the response as JSON
+          if (json.error) {
+            console.error(json.error);
+          }
+          if (json.data) {
+            router.refresh();
+            router.push('/tickets');
+          }
+        } else {
+          console.error("Response is empty or doesn't contain JSON data");
+        }
+      } else {
+        console.error(`API request failed with status: ${res.status}`);
       }
     } catch (error) {
-      console.error('Error creating the ticket:', error);
+      console.error('Error parsing JSON:', error);
     }
-  
+    
+    
   }
 
   return (
     <form onSubmit={handleSubmit} className="w-1/2">
-        <label>
+      <label>
         <span>Title:</span>
         <input
           required 
@@ -43,7 +62,7 @@ export default function CreateForm() {
         />
       </label>
       <label>
-        <span>Body:</span>
+        <span>Title:</span>
         <textarea
           required
           onChange={(e) => setBody(e.target.value)}
@@ -65,9 +84,9 @@ export default function CreateForm() {
         className="btn-primary" 
         disabled={isLoading}
       >
-        {isLoading && <span>Adding...</span>}
+      {isLoading && <span>Adding...</span>}
       {!isLoading && <span>Add Ticket</span>}
-      </button>
+    </button>
     </form>
   )
 }
